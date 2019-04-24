@@ -41,23 +41,58 @@ class GJAPIManager {
                     do {
                         let contacts = try JSONDecoder().decode(GJContact.self, from: data)
                         handler?(contacts, nil)
-                    } catch let DecodingError.dataCorrupted(context) {
-                        print(context)
-                        handler?(nil, nil)
-                    } catch let DecodingError.keyNotFound(key, context) {
-                        print("Key '\(key)' not found:", context.debugDescription)
-                        print("codingPath:", context.codingPath)
-                        handler?(nil, nil)
-                    } catch let DecodingError.valueNotFound(value, context) {
-                        print("Value '\(value)' not found:", context.debugDescription)
-                        print("codingPath:", context.codingPath)
-                        handler?(nil, nil)
-                    } catch let DecodingError.typeMismatch(type, context)  {
-                        print("Type '\(type)' mismatch:", context.debugDescription)
-                        print("codingPath:", context.codingPath)
-                        handler?(nil, nil)
                     } catch {
                         print("error: ", error)
+                        handler?(nil, error)
+                    }
+                }
+            }.resume()
+        }
+    }
+    
+    func editContactDetails(contact: GJContact, handler: GJResponseHandler) {
+        if let id = contact.id {
+            let urlString = "http://gojek-contacts-app.herokuapp.com/contacts/\(id).json"
+            if let url = URL(string: urlString), let data = try? JSONEncoder().encode(contact) {
+                var request = URLRequest(url: url)
+                request.httpMethod = "PUT"
+                request.httpBody = data
+                request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.addValue("application/json", forHTTPHeaderField: "Accept")
+                
+                URLSession.shared.dataTask(with: request) { (data, urlResponse, error) in
+                    if let data = data {
+                        do {
+                            let contacts = try JSONDecoder().decode(GJContact.self, from: data)
+                            handler?(contacts, nil)
+                        } catch {
+                            print("error: ", error.localizedDescription)
+                            handler?(nil, error)
+                        }
+                    }
+                    }.resume()
+            }
+        } else {
+            handler?(nil, nil)
+        }
+    }
+    
+    func addContactDetails(contact: GJContact, handler: GJResponseHandler) {
+        let urlString = "http://gojek-contacts-app.herokuapp.com/contacts.json"
+        if let url = URL(string: urlString), let data = try? JSONEncoder().encode(contact) {
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.httpBody = data
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.addValue("application/json", forHTTPHeaderField: "Accept")
+            
+            URLSession.shared.dataTask(with: request) { (data, urlResponse, error) in
+                if let data = data {
+                    do {
+                        let contacts = try JSONDecoder().decode(GJContact.self, from: data)
+                        handler?(contacts, nil)
+                    } catch {
+                        print("error: ", error.localizedDescription)
                         handler?(nil, error)
                     }
                 }

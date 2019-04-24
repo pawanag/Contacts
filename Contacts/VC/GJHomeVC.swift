@@ -48,7 +48,7 @@ class GJHomeVC: GJBaseVC {
 // MARK: - Button Action Methods
 extension GJHomeVC {
     @IBAction func onTapAddContactButton(_ sender: UIBarButtonItem) {
-        self.openDetail(source: .add)
+        self.openDetail(source: .add, contactId: nil)
     }
 }
 
@@ -81,8 +81,8 @@ private extension GJHomeVC {
         })
     }
     
-    func openDetail(source: GJContactDetailSource) {
-        if let controller = GJContactDetailVC.controller(source: source) {
+    func openDetail(source: GJContactDetailSource, contactId: Int?) {
+        if let controller = GJContactDetailVC.controller(source: source, contactId: contactId) {
             self.navigationController?.pushViewController(controller, animated: true)
         }
     }
@@ -121,7 +121,7 @@ extension GJHomeVC: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if let contactId = self.viewModel.contact(at: indexPath)?.id {
-            self.openDetail(source: .view(contactId))
+            self.openDetail(source: .view, contactId: contactId)
         }
     }
     

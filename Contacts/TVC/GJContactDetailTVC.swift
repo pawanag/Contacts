@@ -8,7 +8,7 @@
 
 import UIKit
 
-class GJContactDetailTVC: UITableViewCell {
+class GJContactDetailTVC: UITableViewCell, UITextFieldDelegate {
     //MARK: IBOutlets
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var textField: UITextField!

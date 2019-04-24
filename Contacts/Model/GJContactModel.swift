@@ -8,22 +8,30 @@
 
 import UIKit
 
-class GJContact: Decodable {
-    var id: Int
+class GJContact: Codable {
+    var id: Int?
     var firstName: String?
     var lastName: String?
     var profilePic: String?
-    var favourite: Bool?
+    var favourite: Bool? = false
     var url: String?
     var email: String?
     var phoneNumber: String?
+    var errors: [String]?
     
     enum CodingKeys: String, CodingKey {
-        case id, favourite, url, email
+        case id, favourite, url, email, errors
         case firstName = "first_name"
         case lastName = "last_name"
         case profilePic = "profile_pic"
         case phoneNumber = "phone_number"
+    }
+    
+    init(id: Int) {
+        self.id = id
+    }
+    
+    init() {
     }
     
     var name: String? {
