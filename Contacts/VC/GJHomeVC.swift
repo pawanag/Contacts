@@ -24,7 +24,7 @@ class GKHomeVM {
     }
 }
 
-class GJHomeVC: UIViewController {
+class GJHomeVC: GJBaseVC {
     //MARK: Outlets
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
@@ -40,6 +40,7 @@ class GJHomeVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tableView.tableFooterView = UIView()
+        self.tableView.separatorColor = #colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)
         self.fetchContacts()
     }
 }
@@ -47,7 +48,7 @@ class GJHomeVC: UIViewController {
 // MARK: - Button Action Methods
 extension GJHomeVC {
     @IBAction func onTapAddContactButton(_ sender: UIBarButtonItem) {
-        //TODO:
+        self.openDetail(source: .add)
     }
 }
 
@@ -80,8 +81,8 @@ private extension GJHomeVC {
         })
     }
     
-    func openDetail(of contact: GJContact) {
-        if let controller = GJContactDetailVC.controller(contactId: contact.id) {
+    func openDetail(source: GJContactDetailSource) {
+        if let controller = GJContactDetailVC.controller(source: source) {
             self.navigationController?.pushViewController(controller, animated: true)
         }
     }
@@ -119,8 +120,8 @@ extension GJHomeVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if let contact = self.viewModel.contact(at: indexPath) {
-            self.openDetail(of: contact)
+        if let contactId = self.viewModel.contact(at: indexPath)?.id {
+            self.openDetail(source: .view(contactId))
         }
     }
     

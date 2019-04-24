@@ -9,7 +9,7 @@
 import UIKit
 
 enum GJContactDetailType {
-    case mobile, email
+    case mobile, email, firstName, lastName
     
     var title: String? {
         var title: String
@@ -19,19 +19,47 @@ enum GJContactDetailType {
             
         case .mobile:
             title = "mobile"
+            
+        case .firstName:
+            title = "First Name"
+            
+        case .lastName:
+            title = "Last Name"
         }
         return title
     }
 }
 
 class GJContactDetailVM {
-    var contactId: Int
+    var contactId: Int?
+    var detailTypes: [GJContactDetailType]
     var contactDetails: GJContact?
-    var detailTypes: [GJContactDetailType] = [.email, .mobile]
+    var isEditable = false
     
-    init(id: Int) {
-        self.contactId = id
+    
+    init(source: GJContactDetailSource) {
+        switch source {
+        case .view(let contactId):
+            detailTypes = [.email, .mobile]
+            self.contactId = contactId
+            self.isEditable = false
+            
+        case .edit(let contactId):
+            detailTypes = [.firstName, .lastName, .email, .mobile]
+            self.contactId = contactId
+            self.isEditable = true
+
+        case .add:
+            detailTypes = [.firstName, .lastName, .email, .mobile]
+            self.isEditable = true
+        }
     }
+}
+
+enum GJContactDetailSource {
+    case view(Int)
+    case edit(Int)
+    case add
 }
 
 class GJContactDetailVC: GJBaseVC {
@@ -39,7 +67,10 @@ class GJContactDetailVC: GJBaseVC {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
-
+    @IBOutlet weak var actionButtonsStackViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var cameraButton: UIButton!
+    @IBOutlet weak var isFavouriteImageView: UIImageView!
+    
     //MARK: Private Properies
     private var viewModel: GJContactDetailVM?
     private enum Constants {
@@ -51,15 +82,17 @@ class GJContactDetailVC: GJBaseVC {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tableView.tableFooterView = UIView()
+        self.tableView.separatorColor = #colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)
+        self.configureUI()
         if let id = self.viewModel?.contactId {
             self.fetchDetails(of: id)
         }
     }
     
     //MARK: Internal Methods
-    class func controller(contactId: Int) -> GJContactDetailVC? {
+    class func controller(source: GJContactDetailSource) -> GJContactDetailVC? {
         let controller = GJBaseVC.storyboard.instantiateViewController(withIdentifier: "GJContactDetailVC") as? GJContactDetailVC
-        controller?.viewModel = GJContactDetailVM(id: contactId)
+        controller?.viewModel = GJContactDetailVM(source: source)
         return controller
     }
 }
@@ -82,6 +115,10 @@ private extension GJContactDetailVC {
     func configureUI() {
         self.nameLabel.text = self.viewModel?.contactDetails?.name
         self.imageView.setImage(with: self.viewModel?.contactDetails?.profilePic)
+        self.cameraButton.isHidden = !(self.viewModel?.isEditable ?? false)
+        self.isFavouriteImageView.image = (self.viewModel?.contactDetails?.favourite ?? false) ? #imageLiteral(resourceName: "favourite_button_selected") : #imageLiteral(resourceName: "favourite_button")
+        self.actionButtonsStackViewHeightConstraint.constant = (self.viewModel?.isEditable ?? false) ? 0.0 : 64.0
+        self.view.layoutIfNeeded()
     }
 }
 
@@ -93,8 +130,19 @@ extension GJContactDetailVC: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "GJContactDetailTVC", for: indexPath) as! GJContactDetailTVC
-        if let details = self.viewModel?.contactDetails, let type = self.viewModel?.detailTypes[indexPath.row] {
-            cell.configure(with: details, type: type)
+        if let type = self.viewModel?.detailTypes[indexPath.row] {
+            var value: String?
+            switch type {
+            case .email:
+                value = self.viewModel?.contactDetails?.email
+                
+            case .mobile:
+                value = self.viewModel?.contactDetails?.phoneNumber
+                
+            default:
+                break
+            }
+            cell.configure(with: type.title, value: value, isEditable: self.viewModel?.isEditable ?? false)
         }
         return cell
     }

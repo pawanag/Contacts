@@ -11,8 +11,8 @@ import UIKit
 class GJContactDetailTVC: UITableViewCell {
     //MARK: IBOutlets
     @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var valueLabel: UILabel!
-
+    @IBOutlet weak var textField: UITextField!
+    
     //AMRK: Lifecycle Methods
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -27,18 +27,13 @@ class GJContactDetailTVC: UITableViewCell {
     //MARK: Private Methods
     private func resetCell() {
         self.titleLabel.text = nil
-        self.valueLabel.text = nil
+        self.textField.text = nil
     }
     
     //MARK: Internal Methods
-    func configure(with contact: GJContact, type: GJContactDetailType) {
-        self.titleLabel.text = type.title
-        switch type {
-        case .email:
-            self.valueLabel.text = contact.email
-            
-        case .mobile:
-            self.valueLabel.text = contact.phoneNumber
-        }
+    func configure(with title: String?, value: String?, isEditable: Bool) {
+        self.titleLabel.text = title
+        self.textField.text = value
+        self.textField.isUserInteractionEnabled = isEditable
     }
 }

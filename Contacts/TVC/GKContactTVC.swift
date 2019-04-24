@@ -27,7 +27,7 @@ class GKContactTVC: UITableViewCell {
     
     //MARK: Private Methods
     private func resetCell() {
-        self.profileImageView.image = nil
+        self.profileImageView.image = #imageLiteral(resourceName: "placeholder_photo")
         self.nameLabel.text = nil
         self.favouriteImageView.isHidden = true
     }

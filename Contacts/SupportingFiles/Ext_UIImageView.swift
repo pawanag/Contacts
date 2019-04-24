@@ -10,9 +10,13 @@ import UIKit
 
 extension UIImageView {
     func setImage(with urlString: String?) {
-        GJAPIManager.shared.downloadImage(from: urlString) { (response, error) in
+        GJAPIManager.shared.downloadImage(from: urlString) {[weak self] (response, error) in
             DispatchQueue.main.async {
-                self.image = response as? UIImage
+                if let image = response as? UIImage {
+                    self?.image = image
+                } else {
+                    self?.image = #imageLiteral(resourceName: "placeholder_photo")
+                }
             }
         }
     }
